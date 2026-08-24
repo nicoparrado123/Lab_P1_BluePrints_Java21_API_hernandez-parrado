@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Repository
+@org.springframework.context.annotation.Profile("!postgres")
 public class InMemoryBlueprintPersistence implements BlueprintPersistence {
 
     private final Map<String, Blueprint> blueprints = new ConcurrentHashMap<>();
@@ -32,8 +33,8 @@ public class InMemoryBlueprintPersistence implements BlueprintPersistence {
     @Override
     public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException {
         String k = keyOf(bp);
-        if (blueprints.containsKey(k)) throw new BlueprintPersistenceException("Blueprint already exists: " + k);
-        blueprints.put(k, bp);
+        if (blueprints.putIfAbsent(k, bp) != null)
+            throw new BlueprintPersistenceException("Blueprint already exists: " + k);
     }
 
     @Override

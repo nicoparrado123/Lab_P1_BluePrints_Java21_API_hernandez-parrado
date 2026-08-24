@@ -8,10 +8,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Undersampling: conserva 1 de cada 2 puntos (índices pares), reduciendo la densidad.
- * Perfil: "undersampling"
- */
 @Component
 @Profile("undersampling")
 public class UndersamplingFilter implements BlueprintsFilter {

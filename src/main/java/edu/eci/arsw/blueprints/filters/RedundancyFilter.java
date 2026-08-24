@@ -8,10 +8,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Elimina puntos consecutivos duplicados (x,y) para reducir redundancia.
- * Perfil: "redundancy"
- */
 @Component
 @Profile("redundancy")
 public class RedundancyFilter implements BlueprintsFilter {
