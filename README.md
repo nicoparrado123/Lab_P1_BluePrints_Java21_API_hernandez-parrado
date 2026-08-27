@@ -8,10 +8,29 @@
 - Maven 3.9+
 
 ## ▶️ Ejecución del proyecto
+
+Compilar:
 ```bash
 mvn clean install
-mvn spring-boot:run
 ```
+
+El proyecto incluye `spring-boot-starter-data-jpa`, así que Spring Boot siempre intenta
+autoconfigurar un `DataSource`. Por eso hay que indicarle explícitamente dónde persistir:
+
+**Con PostgreSQL** (requiere Docker):
+```bash
+docker compose up -d
+mvn spring-boot:run "-Dspring-boot.run.profiles=postgres"
+```
+
+**Solo en memoria** (sin base de datos, útil para pruebas rápidas):
+```bash
+mvn spring-boot:run "-Dspring-boot.run.jvmArguments=-Dspring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration"
+```
+
+> `mvn spring-boot:run` sin ninguna de las dos opciones **falla** con
+> `Failed to configure a DataSource`.
+
 Probar con `curl`:
 ```bash
 curl -s http://localhost:8080/api/v1/blueprints | jq
@@ -21,7 +40,22 @@ curl -i -X POST http://localhost:8080/api/v1/blueprints -H 'Content-Type: applic
 curl -i -X PUT  http://localhost:8080/api/v1/blueprints/john/kitchen/points -H 'Content-Type: application/json' -d '{ "x":3,"y":3 }'
 ```
 
-> Si deseas activar filtros de puntos (reducción de redundancia, *undersampling*, etc.), implementa nuevas clases que implementen `BlueprintsFilter` y cámbialas por `IdentityFilter` con `@Primary` o usando configuración de Spring.
+### Filtros de puntos
+
+Los filtros ya están implementados y se activan por perfil de Spring.
+`IdentityFilter` (sin filtrado) es el perfil por defecto:
+
+| Perfil | Efecto |
+|--------|--------|
+| *(ninguno)* | `IdentityFilter` — no modifica los puntos |
+| `redundancy` | `RedundancyFilter` — elimina puntos consecutivos repetidos |
+| `undersampling` | `UndersamplingFilter` — conserva 1 de cada 2 puntos |
+
+Se combinan con el perfil de persistencia:
+```bash
+mvn spring-boot:run "-Dspring-boot.run.profiles=postgres,redundancy"
+```
+
 ---
 
 Abrir en navegador:  
